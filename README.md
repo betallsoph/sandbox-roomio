@@ -22,15 +22,37 @@ docker compose build
 docker compose up -d
 ```
 
+GitHub Actions CI/CD:
+
+This sandbox repo includes `.github/workflows/deploy.yml`. The workflow syncs this whole folder to the VPS, then runs `docker compose build` and `docker compose up -d` on the VPS.
+
+Required GitHub repository secrets:
+
+- `VPS_HOST`: VPS IP/domain
+- `VPS_USER`: SSH user
+- `VPS_SSH_KEY`: private SSH key allowed to access the VPS
+- `VPS_APP_DIR`: remote folder, for example `/home/ubuntu/roomio-sandbox`
+
+Optional secrets:
+
+- `VPS_PORT`: SSH port, default `22`
+- `SANDBOX_ENV_FILE`: full `.env` content to write on each deploy
+- `HEALTH_WEB_URL`: default `http://127.0.0.1:8083/`
+- `HEALTH_API_URL`: default `http://127.0.0.1:3001/`
+
+If you do not set `SANDBOX_ENV_FILE`, create `.env` manually on the VPS once. The deploy sync excludes `.env`, so normal deploys will not overwrite it.
+
 Default local URLs:
 
 - Web: `http://localhost:8083`
 - API health: `http://localhost:3001/`
 
-Default demo login:
+Displayed public demo login:
 
 - Email: `demo@roomio.local`
-- Password: `demo12345`
+- Password: `demo123456`
+
+This public demo account is meant to be a normal `LANDLORD` account. Create it once from the private Super Admin account before sharing the sandbox link.
 
 Before exposing publicly, copy `.env.example` to `.env` and change at least:
 
@@ -39,7 +61,7 @@ cp .env.example .env
 SANDBOX_POSTGRES_PASSWORD=...
 SANDBOX_SESSION_SECRET=...
 SANDBOX_PUBLIC_ORIGIN=https://demo.your-domain.com
-SANDBOX_SUPER_ADMIN_ACCOUNTS=demo@your-domain.com:your-demo-password:Roomio Demo Admin
+SANDBOX_SUPER_ADMIN_ACCOUNTS=admin@roomio.local:your-private-admin-password:Roomio Admin
 ```
 
 Notes:

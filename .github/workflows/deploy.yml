@@ -1,0 +1,125 @@
+name: Deploy Roomio Sandbox
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: roomio-sandbox-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Sync to VPS and rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+      VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      SANDBOX_ENV_FILE: ${{ secrets.SANDBOX_ENV_FILE }}
+      HEALTH_WEB_URL: ${{ secrets.HEALTH_WEB_URL || 'http://127.0.0.1:8083/' }}
+      HEALTH_API_URL: ${{ secrets.HEALTH_API_URL || 'http://127.0.0.1:3001/' }}
+
+    steps:
+      - name: Checkout sandbox bundle
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in VPS_HOST VPS_USER VPS_APP_DIR VPS_SSH_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name secret is required"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/roomio_sandbox_key
+          chmod 600 ~/.ssh/roomio_sandbox_key
+
+          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Create remote app directory
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/roomio_sandbox_key \
+            -p "$VPS_PORT" \
+            "$VPS_USER@$VPS_HOST" \
+            "mkdir -p '$VPS_APP_DIR'"
+
+      - name: Sync sandbox files to VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='.env' \
+            --exclude='node_modules' \
+            --exclude='uploads' \
+            --exclude='pgdata' \
+            --exclude='*.log' \
+            -e "ssh -i ~/.ssh/roomio_sandbox_key -p $VPS_PORT" \
+            ./ "$VPS_USER@$VPS_HOST:$VPS_APP_DIR/"
+
+      - name: Update remote .env from secret when provided
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "$SANDBOX_ENV_FILE" ]; then
+            echo "SANDBOX_ENV_FILE is empty; keeping the existing remote .env file."
+            exit 0
+          fi
+
+          printf '%s\n' "$SANDBOX_ENV_FILE" | ssh \
+            -i ~/.ssh/roomio_sandbox_key \
+            -p "$VPS_PORT" \
+            "$VPS_USER@$VPS_HOST" \
+            "cat > '$VPS_APP_DIR/.env'"
+
+      - name: Build and restart sandbox on VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/roomio_sandbox_key \
+            -p "$VPS_PORT" \
+            "$VPS_USER@$VPS_HOST" \
+            "cd '$VPS_APP_DIR' && docker compose build && docker compose up -d --remove-orphans && docker compose ps && docker image prune -f"
+
+      - name: Health check from VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/roomio_sandbox_key \
+            -p "$VPS_PORT" \
+            "$VPS_USER@$VPS_HOST" \
+            "curl -fsS '$HEALTH_API_URL' && curl -fsSI '$HEALTH_WEB_URL' | sed -n '1,10p'"
