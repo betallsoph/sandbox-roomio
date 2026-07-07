@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+
+node_modules/
+uploads/
+pgdata/
+
+.DS_Store
+*.log

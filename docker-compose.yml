@@ -1,0 +1,90 @@
+name: roomio-sandbox
+
+services:
+  sandbox-db:
+    image: postgres:16-alpine
+    container_name: roomio-sandbox-db
+    restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - max_connections=20
+      - -c
+      - statement_timeout=15000
+      - -c
+      - idle_in_transaction_session_timeout=10000
+    environment:
+      POSTGRES_USER: roomio_sandbox
+      POSTGRES_PASSWORD: ${SANDBOX_POSTGRES_PASSWORD:-roomio_sandbox_change_me}
+      POSTGRES_DB: roomio_sandbox
+    volumes:
+      - sandbox_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U roomio_sandbox -d roomio_sandbox']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    cpus: ${SANDBOX_DB_CPUS:-0.30}
+    mem_limit: ${SANDBOX_DB_MEMORY:-768m}
+
+  sandbox-api:
+    build:
+      context: ./api
+    container_name: roomio-sandbox-api
+    restart: unless-stopped
+    depends_on:
+      sandbox-db:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:${SANDBOX_API_PORT:-3001}:3000'
+    environment:
+      DATABASE_URL: postgres://roomio_sandbox:${SANDBOX_POSTGRES_PASSWORD:-roomio_sandbox_change_me}@sandbox-db:5432/roomio_sandbox
+      SUPER_ADMIN_ACCOUNTS: ${SANDBOX_SUPER_ADMIN_ACCOUNTS:-demo@roomio.local:demo12345:Roomio Demo Admin}
+      SESSION_SECRET: ${SANDBOX_SESSION_SECRET:-change_me_with_openssl_rand_base64_48}
+      ORIGIN: ${SANDBOX_PUBLIC_ORIGIN:-http://localhost:8083}
+      PUBLIC_APP_ORIGIN: ${SANDBOX_PUBLIC_ORIGIN:-http://localhost:8083}
+      PORT: 3000
+      UPLOAD_DIR: /app/uploads
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      PAYOS_ENC_KEY: ${PAYOS_ENC_KEY:-}
+      PAYOS_PARTNER_CODE: ${PAYOS_PARTNER_CODE:-}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      R2_BUCKET: ${R2_BUCKET:-}
+      R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
+      R2_PRESIGN_EXPIRES_SECONDS: ${R2_PRESIGN_EXPIRES_SECONDS:-300}
+      R2_UPLOAD_MAX_BYTES: ${R2_UPLOAD_MAX_BYTES:-5242880}
+      BOT_TOKEN: ${BOT_TOKEN:-}
+      BOT_USERNAME: ${BOT_USERNAME:-}
+      MINIAPP_SHORT_NAME: ${MINIAPP_SHORT_NAME:-}
+      NODE_OPTIONS: ${SANDBOX_NODE_OPTIONS:---max-old-space-size=256}
+      UV_THREADPOOL_SIZE: ${SANDBOX_UV_THREADPOOL_SIZE:-2}
+    volumes:
+      - sandbox_app_uploads:/app/uploads
+    cpus: ${SANDBOX_API_CPUS:-0.30}
+    mem_limit: ${SANDBOX_API_MEMORY:-512m}
+
+  sandbox-web:
+    build:
+      context: ./web
+    container_name: roomio-sandbox-web
+    restart: unless-stopped
+    depends_on:
+      - sandbox-api
+    ports:
+      - '127.0.0.1:${SANDBOX_WEB_PORT:-8083}:80'
+    environment:
+      API_TARGET: http://sandbox-api:3000
+    cpus: ${SANDBOX_WEB_CPUS:-0.10}
+    mem_limit: ${SANDBOX_WEB_MEMORY:-128m}
+
+volumes:
+  sandbox_postgres_data:
+  sandbox_app_uploads:

@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/DK3Fl9T5.js";import{r as t}from"../chunks/BuFlayix.js";function n(e,n){throw new t(e,n.toString())}var r=e({load:()=>i}),i=({params:e})=>{n(307,`/dashboard/rooms?propertyId=${encodeURIComponent(e.propertyId)}`)};export{r as universal};
