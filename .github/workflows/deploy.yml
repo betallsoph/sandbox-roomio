@@ -31,6 +31,14 @@ jobs:
       - name: Checkout sandbox bundle
         uses: actions/checkout@v4
 
+      - name: Install deployment tools
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client
+
       - name: Validate required secrets
         shell: bash
         run: |
