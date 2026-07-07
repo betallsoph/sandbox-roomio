@@ -79,6 +79,17 @@ jobs:
             "$VPS_USER@$VPS_HOST" \
             "mkdir -p '$VPS_APP_DIR'"
 
+      - name: Ensure remote deployment tools
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/roomio_sandbox_key \
+            -p "$VPS_PORT" \
+            "$VPS_USER@$VPS_HOST" \
+            "if ! command -v rsync >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y rsync; fi"
+
       - name: Sync sandbox files to VPS
         shell: bash
         run: |
