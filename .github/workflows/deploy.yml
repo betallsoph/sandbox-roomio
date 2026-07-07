@@ -141,4 +141,20 @@ jobs:
             -i ~/.ssh/roomio_sandbox_key \
             -p "$VPS_PORT" \
             "$VPS_USER@$VPS_HOST" \
-            "curl -fsS '$HEALTH_API_URL' && curl -fsSI '$HEALTH_WEB_URL' | sed -n '1,10p'"
+            "cd '$VPS_APP_DIR' && \
+              for i in \$(seq 1 30); do \
+                if curl -fsS '$HEALTH_API_URL' >/tmp/roomio-sandbox-api-health.json 2>/tmp/roomio-sandbox-api-health.err && \
+                   curl -fsSI '$HEALTH_WEB_URL' >/tmp/roomio-sandbox-web-health.txt 2>/tmp/roomio-sandbox-web-health.err; then \
+                  cat /tmp/roomio-sandbox-api-health.json; \
+                  sed -n '1,10p' /tmp/roomio-sandbox-web-health.txt; \
+                  exit 0; \
+                fi; \
+                echo \"Waiting for sandbox health check... attempt \$i/30\"; \
+                sleep 2; \
+              done; \
+              echo 'API health error:'; cat /tmp/roomio-sandbox-api-health.err || true; \
+              echo 'Web health error:'; cat /tmp/roomio-sandbox-web-health.err || true; \
+              docker compose ps; \
+              docker compose logs --tail=80 sandbox-api; \
+              docker compose logs --tail=80 sandbox-web; \
+              exit 1"
