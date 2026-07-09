@@ -43,8 +43,9 @@ services:
       - '127.0.0.1:${SANDBOX_API_PORT:-3001}:3000'
     environment:
       DATABASE_URL: postgres://roomio_sandbox:${SANDBOX_POSTGRES_PASSWORD:-roomio_sandbox_change_me}@sandbox-db:5432/roomio_sandbox
-      SUPER_ADMIN_ACCOUNTS: ${SANDBOX_SUPER_ADMIN_ACCOUNTS:-admin@roomio.local:admin_change_me:Roomio Admin}
+      SUPER_ADMIN_ACCOUNTS: ${SANDBOX_SUPER_ADMIN_ACCOUNTS:-}
       DEMO_LOGIN_EMAIL: ${SANDBOX_DEMO_LOGIN_EMAIL:-demo@roomio.local}
+      DEMO_LOGIN_AUTOPROVISION: ${SANDBOX_DEMO_LOGIN_AUTOPROVISION:-true}
       SESSION_SECRET: ${SANDBOX_SESSION_SECRET:-change_me_with_openssl_rand_base64_48}
       ORIGIN: ${SANDBOX_PUBLIC_ORIGIN:-http://localhost:8083}
       PUBLIC_APP_ORIGIN: ${SANDBOX_PUBLIC_ORIGIN:-http://localhost:8083}

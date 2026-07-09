@@ -51,7 +51,8 @@ Public demo login:
 
 - The login page is built with auto-login enabled, so visitors can type anything and press login.
 - Behind the scenes the API uses `SANDBOX_DEMO_LOGIN_EMAIL` to login a normal hidden `LANDLORD` demo user, so API permissions and demo data work correctly.
-- Create that user once from the private Super Admin account before sharing the sandbox link.
+- If that landlord does not exist yet, `SANDBOX_DEMO_LOGIN_AUTOPROVISION=true` creates it automatically on the first demo login.
+- Public sandbox defaults leave `SANDBOX_SUPER_ADMIN_ACCOUNTS` blank, so no Super Admin login is exposed.
 
 Before exposing publicly, copy `.env.example` to `.env` and change at least:
 
@@ -60,8 +61,9 @@ cp .env.example .env
 SANDBOX_POSTGRES_PASSWORD=...
 SANDBOX_SESSION_SECRET=...
 SANDBOX_PUBLIC_ORIGIN=https://demo.your-domain.com
-SANDBOX_SUPER_ADMIN_ACCOUNTS=admin@roomio.local:your-private-admin-password:Roomio Admin
+SANDBOX_SUPER_ADMIN_ACCOUNTS=
 SANDBOX_DEMO_LOGIN_EMAIL=demo@roomio.local
+SANDBOX_DEMO_LOGIN_AUTOPROVISION=true
 ```
 
 Notes:
