@@ -47,12 +47,11 @@ Default local URLs:
 - Web: `http://localhost:8083`
 - API health: `http://localhost:3001/`
 
-Displayed public demo login:
+Public demo login:
 
-- Email: `demo@roomio.local`
-- Password: `demo123456`
-
-This public demo account is meant to be a normal `LANDLORD` account. Create it once from the private Super Admin account before sharing the sandbox link.
+- The login page is built with auto-login enabled, so visitors can type anything and press login.
+- Behind the scenes it still uses a normal hidden `LANDLORD` demo user so API permissions and demo data work correctly.
+- Create that user once from the private Super Admin account before sharing the sandbox link.
 
 Before exposing publicly, copy `.env.example` to `.env` and change at least:
 
