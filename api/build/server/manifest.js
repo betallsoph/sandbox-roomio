@@ -10,10 +10,10 @@ return {
 	assets: new Set([]),
 	mimeTypes: {},
 	_: {
-		client: {start:"_app/immutable/entry/start.BS7AFIkM.js",app:"_app/immutable/entry/app.DkxpeUme.js",imports:["_app/immutable/entry/start.BS7AFIkM.js","_app/immutable/chunks/B6ezvLA6.js","_app/immutable/chunks/BlMtw-PB.js","_app/immutable/entry/app.DkxpeUme.js","_app/immutable/chunks/BlMtw-PB.js","_app/immutable/chunks/kNaey6uv.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.BD25I-OS.js",app:"_app/immutable/entry/app.BDVyPl9d.js",imports:["_app/immutable/entry/start.BD25I-OS.js","_app/immutable/chunks/xcIMJQPn.js","_app/immutable/chunks/BlMtw-PB.js","_app/immutable/entry/app.BDVyPl9d.js","_app/immutable/chunks/BlMtw-PB.js","_app/immutable/chunks/kNaey6uv.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./chunks/0-CsN4i3yR.js')),
-			__memo(() => import('./chunks/1-B-g5bNNi.js'))
+			__memo(() => import('./chunks/1-ZijRUYDu.js'))
 		],
 		remotes: {
 			
@@ -38,7 +38,7 @@ return {
 				pattern: /^\/api\/auth\/?$/,
 				params: [],
 				page: null,
-				endpoint: __memo(() => import('./chunks/_server.ts-GGI3J_5d.js'))
+				endpoint: __memo(() => import('./chunks/_server.ts-BmbM77Ff.js'))
 			},
 			{
 				id: "/api/auth/telegram",

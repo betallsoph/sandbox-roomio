@@ -1,1 +1,0 @@
-import{gt as e,ht as t}from"../chunks/KzHcv44g.js";import"../chunks/xihTtKlq.js";import{t as n}from"../chunks/C3oQcxjP.js";import{t as r}from"../chunks/DkE-crxM.js";function i(i,a){e(a,!0),n(i,{get landlordId(){return r.params.id}}),t()}export{i as component};
